@@ -95,7 +95,7 @@ const PublicLandingPage = () => {
 
         {/* Features Section */}
         <section className="features-section">
-          <h2 className="section-title">Why Choose Our Design Platform?</h2>
+          <h2 className="section-title" style={{marginBottom: '20px'}}>Why Choose Our Design Platform?</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">🎨</div>

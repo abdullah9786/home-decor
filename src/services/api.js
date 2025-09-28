@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API configuration
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'https://home-decor-backend-5mat.onrender.com';
 
 // Create axios instance with default config
 const apiClient = axios.create({

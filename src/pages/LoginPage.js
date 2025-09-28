@@ -283,11 +283,11 @@ const LoginPage = () => {
         </form>
 
         {/* Backend Info */}
-        <div className="demo-info">
+        {/* <div className="demo-info">
           <p>
             <strong>Note:</strong> Make sure your backend server is running on localhost:5000
           </p>
-        </div>
+        </div> */}
 
         {/* Signup Link */}
         <div className="signup-link">
