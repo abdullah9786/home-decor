@@ -101,6 +101,13 @@
   margin-bottom: 0;
 }
 
+.user-info {
+  color: #9ca3af;
+  font-size: 0.95rem;
+  margin: 8px 0 0 0;
+  font-style: italic;
+}
+
 .rooms-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

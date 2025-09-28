@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import HealthCheck from '../components/HealthCheck';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -43,8 +44,23 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <header className="landing-header">
+        <div className="auth-links">
+          <button 
+            className="auth-link login"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </button>
+          <button 
+            className="auth-link signup"
+            onClick={() => navigate('/signup')}
+          >
+            Sign Up
+          </button>
+        </div>
         <h1 className="main-title">Home Decor Customizer</h1>
         <p className="subtitle">Design and customize your perfect living space</p>
+        <HealthCheck />
       </header>
 
       <main className="room-selection">

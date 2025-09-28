@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './SignupPage.css';
 
 // Simple icons using Unicode and CSS
@@ -13,6 +14,7 @@ const SparklesIcon = () => <span style={{ fontSize: '20px' }}>✨</span>;
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { signup, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,10 +24,13 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
+    setSuccessMessage('');
+    clearError();
     
     // Validation
     const newErrors = {};
@@ -38,8 +43,8 @@ const SignupPage = () => {
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
     }
     
     if (!formData.confirmPassword) {
@@ -53,14 +58,35 @@ const SignupPage = () => {
       return;
     }
     
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      setIsLoading(true);
+      
+      const result = await signup(formData.email, formData.password);
+      
+      if (result.success) {
+        setSuccessMessage(result.message);
+        
+        // Navigate to OTP verification page after a short delay
+        setTimeout(() => {
+          navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
+        }, 1500);
+      }
+      
+    } catch (err) {
+      console.error('Signup error:', err);
+      
+      // Handle specific error cases
+      if (err.message && err.message.includes('Email is already registered')) {
+        setErrors({ email: 'This email is already registered. Try logging in instead.' });
+      } else if (err.type === 'NETWORK_ERROR') {
+        setErrors({ general: 'Unable to connect to server. Please check your internet connection and try again.' });
+      } else {
+        setErrors({ general: err.message || 'An unexpected error occurred. Please try again.' });
+      }
+      
+    } finally {
       setIsLoading(false);
-      // Navigate to OTP verification page
-      navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
-    }, 2000);
+    }
   };
 
   const handleChange = (e) => {
@@ -83,6 +109,22 @@ const SignupPage = () => {
           <h1 className="signup-title">Create Account</h1>
           <p className="signup-subtitle">Join us to start designing your dream space</p>
         </div>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="success-message">
+            <SparklesIcon />
+            {successMessage}
+          </div>
+        )}
+
+        {/* General Error Message */}
+        {(errors.general || error) && (
+          <div className="error-message general-error">
+            <AlertIcon />
+            {errors.general || error}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="signup-form">
@@ -184,10 +226,10 @@ const SignupPage = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || loading}
             className="submit-button"
           >
-            {isLoading ? (
+            {(isLoading || loading) ? (
               <>
                 <div className="loading-spinner"></div>
                 Creating Account...

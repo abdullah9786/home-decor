@@ -446,3 +446,50 @@
     padding: 14px 18px 14px 45px;
   }
 }
+
+/* Success Message Styles */
+.success-message-inline {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  animation: successSlideIn 0.5s ease-out;
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+}
+
+@keyframes successSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* General Error Message Styles */
+.login-page .general-error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 500;
+  animation: errorShake 0.5s ease-out;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}

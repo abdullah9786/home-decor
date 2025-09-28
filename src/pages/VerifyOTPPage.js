@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './VerifyOTPPage.css';
 
 // Simple icons using Unicode and CSS
@@ -14,11 +15,14 @@ const VerifyOTPPage = () => {
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email') || '';
   
+  const { verifyEmail, resendVerification, loading, error: authError, clearError } = useAuth();
+  
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   const inputRefs = useRef([]);
 
@@ -87,32 +91,73 @@ const VerifyOTPPage = () => {
     
     setIsLoading(true);
     setError('');
+    clearError();
     
-    // Simulate API call
-    setTimeout(() => {
-      if (otpString === '123456') {
+    try {
+      const result = await verifyEmail(email, otpString);
+      
+      if (result.success) {
         setIsSuccess(true);
+        setSuccessMessage(result.message || 'Email verified successfully!');
+        
+        // Navigate to login page after a short delay
         setTimeout(() => {
           navigate('/login?verified=true');
         }, 2000);
-      } else {
-        setError('Invalid OTP. Please try again.');
-        // Clear OTP and focus first input
-        setOtp(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
       }
+      
+    } catch (err) {
+      console.error('Verification error:', err);
+      
+      // Handle specific error cases
+      if (err.message && err.message.includes('Invalid or expired')) {
+        setError('Invalid or expired verification code. Please try again or request a new code.');
+      } else if (err.message && err.message.includes('User not found')) {
+        setError('Account not found. Please sign up first.');
+        setTimeout(() => navigate('/signup'), 2000);
+      } else if (err.type === 'NETWORK_ERROR') {
+        setError('Unable to connect to server. Please check your internet connection.');
+      } else {
+        setError(err.message || 'Verification failed. Please try again.');
+      }
+      
+      // Clear OTP and focus first input on error
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+      
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setResendCooldown(30);
     setOtp(['', '', '', '', '', '']);
     setError('');
+    clearError();
     inputRefs.current[0]?.focus();
     
-    // Simulate resend API call
-    console.log('Resending OTP to:', email);
+    try {
+      const result = await resendVerification(email);
+      
+      if (result.success) {
+        // Show success message briefly
+        setSuccessMessage('New verification code sent to your email!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
+      
+    } catch (err) {
+      console.error('Resend error:', err);
+      
+      if (err.type === 'NETWORK_ERROR') {
+        setError('Unable to connect to server. Please check your internet connection.');
+      } else {
+        setError(err.message || 'Failed to resend code. Please try again.');
+      }
+      
+      // Reset cooldown on error so user can try again
+      setResendCooldown(0);
+    }
   };
 
   if (!email) {
@@ -139,13 +184,29 @@ const VerifyOTPPage = () => {
           )}
         </div>
 
+        {/* Success Message */}
+        {successMessage && !isSuccess && (
+          <div className="success-message">
+            <CheckIcon />
+            {successMessage}
+          </div>
+        )}
+
+        {/* General Error Message */}
+        {(error || authError) && (
+          <div className="error-message general-error">
+            <AlertIcon />
+            {error || authError}
+          </div>
+        )}
+
         {/* Form */}
         {isSuccess ? (
           <div className="success-screen">
             <div className="success-icon-large">
               <CheckIcon />
             </div>
-            <p className="success-message">Account verified successfully!</p>
+            <p className="success-message">{successMessage || 'Account verified successfully!'}</p>
             <p className="redirect-message">Redirecting to login page...</p>
           </div>
         ) : (
@@ -181,10 +242,10 @@ const VerifyOTPPage = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || otp.join('').length !== 6}
+              disabled={isLoading || loading || otp.join('').length !== 6}
               className={`submit-button ${isSuccess ? 'success' : ''}`}
             >
-              {isLoading ? (
+              {(isLoading || loading) ? (
                 <>
                   <div className="loading-spinner"></div>
                   Verifying...
@@ -204,20 +265,20 @@ const VerifyOTPPage = () => {
               <button
                 type="button"
                 onClick={handleResend}
-                disabled={resendCooldown > 0}
+                disabled={resendCooldown > 0 || loading}
                 className="resend-button"
               >
                 <RefreshIcon />
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : loading ? 'Sending...' : 'Resend Code'}
               </button>
             </div>
 
-            {/* Demo Info */}
+            {/* Backend Info */}
             <div className="demo-info">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                 <MailIcon />
                 <p>
-                  <strong>For testing:</strong> Use code <span className="demo-code">123456</span>
+                  <strong>Note:</strong> Check your email for the verification code
                 </p>
               </div>
             </div>

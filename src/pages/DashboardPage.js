@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './DashboardPage.css';
 
 // Simple icons using Unicode and CSS
@@ -14,6 +15,7 @@ const ProjectIcon = () => <span style={{ fontSize: '20px', color: 'white' }}>ðŸ
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const rooms = [
     { 
@@ -54,7 +56,7 @@ const DashboardPage = () => {
   };
 
   const handleLogout = () => {
-    navigate('/');
+    logout(); // This will automatically redirect to login page
   };
 
   return (
@@ -88,8 +90,13 @@ const DashboardPage = () => {
       <div className="dashboard-container">
         {/* Welcome Section */}
         <div className="dashboard-welcome">
-          <h1 className="welcome-title">Welcome back!</h1>
+          <h1 className="welcome-title">
+            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+          </h1>
           <p className="welcome-subtitle">Ready to create your next amazing design?</p>
+          {user?.email && (
+            <p className="user-info">Logged in as: {user.email}</p>
+          )}
         </div>
 
         {/* Room Cards */}
