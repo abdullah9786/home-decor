@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './LoginPage.css';
 
@@ -19,6 +19,7 @@ const LoginPage = () => {
   const verified = searchParams.get('verified') === 'true';
   
   const { login, loading, error, clearError, isAuthenticated } = useAuth();
+  const location = useLocation();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -40,9 +41,10 @@ const LoginPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      const intendedPath = location.state?.from?.pathname || '/';
+      navigate(intendedPath);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,9 +78,10 @@ const LoginPage = () => {
       if (result.success) {
         setSuccessMessage('Login successful! Redirecting...');
         
-        // Navigate to dashboard after a short delay
+        // Navigate to intended page or home after a short delay
         setTimeout(() => {
-          navigate('/dashboard');
+          const intendedPath = location.state?.from?.pathname || '/';
+          navigate(intendedPath);
         }, 1000);
       }
       

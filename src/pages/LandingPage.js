@@ -1,10 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import HealthCheck from '../components/HealthCheck';
+import { useAuth } from '../contexts/AuthContext';
 import './LandingPage.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout(); // This will automatically redirect to login page
+  };
 
   const roomOptions = [
     {
@@ -43,25 +48,46 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      <header className="landing-header">
-        <div className="auth-links">
-          <button 
-            className="auth-link login"
-            onClick={() => navigate('/login')}
-          >
-            Login
-          </button>
-          <button 
-            className="auth-link signup"
-            onClick={() => navigate('/signup')}
-          >
-            Sign Up
-          </button>
+      {/* Authenticated Header */}
+      <header className="authenticated-header">
+        <div className="header-container">
+          <div className="logo">
+            <span className="logo-icon">🏠</span>
+            <span className="logo-text">Home Decor Customizer</span>
+          </div>
+          
+          <div className="user-section">
+            <div className="user-info">
+              <span className="user-icon">👤</span>
+              <span className="user-name">
+                {user?.email ? user.email.split('@')[0] : 'User'}
+              </span>
+            </div>
+            <div className="header-actions">
+              <button 
+                className="header-btn dashboard-btn"
+                onClick={() => navigate('/dashboard')}
+              >
+                <span className="btn-icon">📊</span>
+                Dashboard
+              </button>
+              <button 
+                className="header-btn logout-btn"
+                onClick={handleLogout}
+              >
+                <span className="btn-icon">🚪</span>
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
-        <h1 className="main-title">Home Decor Customizer</h1>
-        <p className="subtitle">Design and customize your perfect living space</p>
-        <HealthCheck />
       </header>
+
+      {/* Main Title Section */}
+      <div className="title-section">
+        <h1 className="main-title">Choose Your Space</h1>
+        <p className="subtitle">Select a room to start designing</p>
+      </div>
 
       <main className="room-selection">
         <h2 className="section-title">Choose an area to decorate</h2>
